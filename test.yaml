@@ -1,0 +1,35 @@
+node_templates:
+  cluster_autoscaler:
+    type: cloudify.kubernetes.resources.Deployment
+    properties:
+      definition:
+        apiVersion: extensions/v1beta1
+        kind: Deployment
+        metadata:
+          name: cluster_autoscaler
+          namespace: default
+        spec:
+          replicas: 1
+          priorityClassName: system-cluster-critical
+          template:
+            metadata:
+              labels:
+                name: cluster_autoscaler
+                namespace: default
+            spec:            
+              containers:
+                - image: gcr.io/flash-hour-213208/k8s-autoscaler
+                  name: cluster-autoscaler
+                  resources:
+                    limits:
+                      cpu: 100m
+                      memory: 300Mi
+                    requests:
+                      cpu: 100m
+                      memory: 300Mi
+                  command:
+                    - ./cluster-autoscaler
+                    - --nodes=1:5:{{MIG_LINK}} 
+    relationships:
+      - type: cloudify.kubernetes.relationships.managed_by_master
+        target: kubernetes_master
