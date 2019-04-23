@@ -33,3 +33,38 @@ node_templates:
     relationships:
       - type: cloudify.kubernetes.relationships.managed_by_master
         target: kubernetes_master
+
+
+
+
+node_templates:
+  cluster-autoscaler:
+    type: cloudify.kubernetes.resources.Deployment
+    properties:
+      definition:
+        apiVersion: extensions/v1beta1
+        kind: Deployment
+        metadata:
+          name: cluster-autoscaler
+          namespace: default
+        spec:
+          replicas: 1
+          priorityClassName: system-cluster-critical
+          template:
+            spec:
+              containers:
+                - image: {{CA container image path}}
+                  name: cluster-autoscaler
+                  resources:
+                    limits:
+                      cpu: 100m
+                      memory: 300Mi
+                    requests:
+                      cpu: 100m
+                      memory: 300Mi
+                  command:
+                    - ./cluster-autoscaler
+                    - --nodes={{Min}}:{{Max}}:{{Cluster link}} 
+    relationships:
+      - type: cloudify.kubernetes.relationships.managed_by_master
+        target: kubernetes_master
