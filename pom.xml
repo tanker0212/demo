@@ -38,17 +38,17 @@
 		<dependency>
 		  <groupId>io.opencensus</groupId>
 		  <artifactId>opencensus-api</artifactId>
-		  <version>${opencensus.version}</version>
+		  <version>0.12.2</version>
 		</dependency>
 		<dependency>
 		  <groupId>io.opencensus</groupId>
 		  <artifactId>opencensus-impl</artifactId>
-		  <version>${opencensus.version}</version>
+		  <version>0.12.2</version>
 		</dependency>
 		<dependency>
 		  <groupId>io.opencensus</groupId>
 		  <artifactId>opencensus-exporter-stats-stackdriver</artifactId>
-		  <version>${opencensus.version}</version>
+		  <version>0.12.2</version>
 		</dependency>
 	</dependencies>
 
