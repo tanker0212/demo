@@ -35,7 +35,21 @@
 			<artifactId>httpclient</artifactId>
 			<version>4.4</version>
 		</dependency>
-		
+		<dependency>
+		  <groupId>io.opencensus</groupId>
+		  <artifactId>opencensus-api</artifactId>
+		  <version>${opencensus.version}</version>
+		</dependency>
+		<dependency>
+		  <groupId>io.opencensus</groupId>
+		  <artifactId>opencensus-impl</artifactId>
+		  <version>${opencensus.version}</version>
+		</dependency>
+		<dependency>
+		  <groupId>io.opencensus</groupId>
+		  <artifactId>opencensus-exporter-stats-stackdriver</artifactId>
+		  <version>${opencensus.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
