@@ -1,83 +1,65 @@
+import com.google.common.collect.Lists;
 
-package com.yourorg.yourldap.opencensus;
+import io.opencensus.exporter.stats.stackdriver.StackdriverStatsExporter;
+import io.opencensus.stats.Aggregation;
+import io.opencensus.stats.BucketBoundaries;
+import io.opencensus.stats.Measure.MeasureLong;
+import io.opencensus.stats.Stats;
+import io.opencensus.stats.StatsRecorder;
+import io.opencensus.stats.View;
+import io.opencensus.stats.View.Name;
+import io.opencensus.stats.ViewManager;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Map;
-import java.util.logging.Logger;
+import java.util.Collections;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+public class Quickstart {
+  private static final int EXPORT_INTERVAL = 60;
+  private static final MeasureLong LATENCY_MS = MeasureLong.create(
+      "task_latency",
+      "The task latency in milliseconds",
+      "ms");
+  // Latency in buckets:
+  // [>=0ms, >=100ms, >=200ms, >=400ms, >=1s, >=2s, >=4s]
+  private static final BucketBoundaries LATENCY_BOUNDARIES = BucketBoundaries.create(
+      Lists.newArrayList(0d, 100d, 200d, 400d, 1000d, 2000d, 4000d));
+  private static final StatsRecorder STATS_RECORDER = Stats.getStatsRecorder();
 
-import io.opencensus.common.Scope;
-import io.opencensus.exporter.trace.stackdriver.StackdriverTraceConfiguration;
-import io.opencensus.exporter.trace.stackdriver.StackdriverTraceExporter;
-import io.opencensus.trace.SpanBuilder;
-import io.opencensus.trace.Status;
-import io.opencensus.trace.Tracer;
-import io.opencensus.trace.Tracing;
-import io.opencensus.trace.samplers.Samplers;
+  public static void main(String[] args) throws IOException, InterruptedException {
+    // Register the view. It is imperative that this step exists,
+    // otherwise recorded metrics will be dropped and never exported.
+    View view = View.create(
+        Name.create("task_latency_distribution"),
+        "The distribution of the task latencies.",
+        LATENCY_MS,
+        Aggregation.Distribution.create(LATENCY_BOUNDARIES),
+        Collections.emptyList());
 
-@SuppressWarnings("serial")
-@WebServlet(name = "hellohenry", value = "/" )
-public class MainServlet extends HttpServlet {
+    ViewManager viewManager = Stats.getViewManager();
+    viewManager.registerView(view);
 
-  private static final Logger logger = Logger.getLogger(MainServlet.class.getName());
-  private static final String projectId = System.getenv("PROJECT");
-  private static final Tracer tracer = Tracing.getTracer();
+    // Enable OpenCensus exporters to export metrics to Stackdriver Monitoring.
+    // Exporters use Application Default Credentials to authenticate.
+    // See https://developers.google.com/identity/protocols/application-default-credentials
+    // for more details.
+    StackdriverStatsExporter.createAndRegister();
 
-  public void init() throws ServletException {
-    try {
-      StackdriverTraceExporter.createAndRegister(StackdriverTraceConfiguration.builder()
-    .setProjectId(projectId)
-    .build());
-    } catch (IOException e) {
-      logger.info("[init] IOException");
+    // Record 100 fake latency values between 0 and 5 seconds.
+    Random rand = new Random();
+    for (int i = 0; i < 100; i++) {
+      long ms = (long) (TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS) * rand.nextDouble());
+      System.out.println(String.format("Latency %d: %d", i, ms));
+      STATS_RECORDER.newMeasureMap().put(LATENCY_MS, ms).record();
     }
+
+    // The default export interval is 60 seconds. The thread with the StackdriverStatsExporter must
+    // live for at least the interval past any metrics that must be collected, or some risk being
+    // lost if they are recorded after the last export.
+
+    System.out.println(String.format(
+        "Sleeping %d seconds before shutdown to ensure all records are flushed.", EXPORT_INTERVAL));
+    Thread.sleep(TimeUnit.MILLISECONDS.convert(EXPORT_INTERVAL, TimeUnit.SECONDS));
   }
-
-  @Override
-  public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    logger.info("[doGet] Entered");
-    PrintWriter out = resp.getWriter();
-    SpanBuilder spanBuilder=tracer.spanBuilder("yourldap.yourorg.com/opencensus")
-    .setRecordEvents(true)
-    .setSampler(Samplers.alwaysSample());
-    logger.info("[doGet] Entering ScopedSpan");
-    try (Scope ss = spanBuilder.startScopedSpan()) {
-    
-      logger.info("[doGet] Annotating 'HeyHenry'");
-      tracer.getCurrentSpan().addAnnotation("HeyHenry");
-      out.format("[Java] Hello Henry!\n\n");
-      
-      logger.info("[doGet] Annotating 'Environment'");
-      tracer.getCurrentSpan().addAnnotation("Environment");
-      Map<String, String> env = System.getenv();
-      for (String envName : env.keySet()) {
-        out.format("%s=%s%n", envName, env.get(envName));
-      }
-
-      tracer.getCurrentSpan().addAnnotation("Complete");
-      logger.info("[doGet] Exiting ScopedSpan");
-      
-    } catch (Exception e) {
-      tracer.getCurrentSpan().addAnnotation("Exception!");
-      tracer.getCurrentSpan().setStatus(Status.UNKNOWN);
-      logger.severe(e.getMessage());
-    }
-    logger.info("[doGet] Exited ScopedSpan");
-
-    logger.info("[doGet] Sleeping to ensure spans are exported");
-    try {
-      Thread.sleep(5100);
-    } catch (InterruptedException e) {
-      logger.info("[doGet] InterruptedException");
-    }
-    logger.info("[doGet] Done sleeping");
-    logger.info("[doGet] Exited.");
-  }
-
 }
