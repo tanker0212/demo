@@ -78,5 +78,22 @@ public class Workload {
         System.out.println("실행 시간 : " + runningTime);
         System.out.println("총 요청 수 : " + repeat);
     }
+    
+        public String showCPU(){
+        OperatingSystemMXBean osbean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        RuntimeMXBean runbean = (RuntimeMXBean) ManagementFactory.getRuntimeMXBean();
+        long bfprocesstime = osbean.getProcessCpuTime();
+        long bfuptim = runbean.getUptime();
+        long ncpus = osbean.getAvailableProcessors();
+        for (int i = 0; i < 1000000; ++i) {
+            ncpus = osbean.getAvailableProcessors();
+        }
+        long afprocesstime = osbean.getProcessCpuTime();
+        long afuptime = runbean.getUptime();
+        float cal = (afprocesstime - bfprocesstime) / ((afuptime - bfuptim) * 10000f);
+        float usage = Math.min(99f, cal);
+        
+        return "CPU usage : " + usage;    
+    }
 
 }
