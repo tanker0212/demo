@@ -34,4 +34,11 @@ public class WorkloadController {
     public void loadTheWork(@RequestParam String ip, @RequestParam int repeat, @RequestParam int load) throws ClientProtocolException, IOException {
         workload.startWorkload(ip, repeat, load);
     }
+    
+        @GetMapping("/cpuUsage")
+    @ResponseBody
+    public String hanqing() {
+        return workload.showCPU();
+    }
+    
 }
