@@ -47,11 +47,18 @@ public class WorkloadController {
     @GetMapping("/")
     @ResponseBody
     public String work() {
-
         workload.setLoad(100);
-
         return workload.getReplicas() + "\t" + monitor.getCPU();
     }
+
+    @GetMapping("/setLoop")
+    @ResponseBody
+    public String setLoop(@RequestParam Integer loop) {
+        workload.setLoop(loop);
+        return "set loop : " + workload.getLoop();
+    }
+
+
 
     @GetMapping("/init")
     @ResponseBody

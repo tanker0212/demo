@@ -29,6 +29,16 @@ public class Workload {
 
     int currnetReplicas = 1;
 
+    int loadLoop = 1000;
+
+    public void setLoop(int loop){
+        loadLoop = loop;
+    }
+
+    public int getLoop(){
+        return loadLoop;
+    }
+
     public void setReplicas(int replicas) {
         currnetReplicas = replicas;
     }
@@ -58,6 +68,7 @@ public class Workload {
     // }
 
     public int setLoad(Integer loop) {
+        loop = loadLoop;
         if (loop == null)
             loop = 1024;
         //System.out.println(loop);
