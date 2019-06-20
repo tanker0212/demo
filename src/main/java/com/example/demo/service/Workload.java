@@ -29,7 +29,7 @@ public class Workload {
 
     int currnetReplicas = 1;
 
-    int loadLoop = 2000;
+    int loadLoop = 1024;
 
     public void setLoop(int loop){
         loadLoop = loop;
