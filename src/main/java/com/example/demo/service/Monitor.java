@@ -30,7 +30,7 @@ public class Monitor {
 
     ScheduledExecutorService service;
 
-    int schedulingTime = 10000;
+    int schedulingTime = 5000;
 
     OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
