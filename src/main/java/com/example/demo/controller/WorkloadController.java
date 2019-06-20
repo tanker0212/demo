@@ -103,6 +103,7 @@ public class WorkloadController {
     @GetMapping("/setTime")
     @ResponseBody
     public String setSchedulingTime(@RequestParam int time) {
+        monitor.setSchedulingTime(time);
         return "Scheduling Time : " + monitor.getSchedulingTime() + " ms";
     }
 
