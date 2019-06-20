@@ -43,11 +43,16 @@ public class WorkloadController {
 
     }
 
-    @GetMapping("/")
+    @GetMapping("/monitor")
     @ResponseBody
-    public String work() {
-        workload.setLoad(100);
+    public String monitor() {
         return workload.getReplicas() + "\t" + monitor.getCPU();
+    }
+
+    @GetMapping("/work")
+    @ResponseBody
+    public void work() {
+        workload.setLoad(100);
     }
 
     @GetMapping("/setLoop")
