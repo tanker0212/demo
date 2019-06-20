@@ -30,7 +30,18 @@ public class Monitor {
 
     ScheduledExecutorService service;
 
+    int schedulingTime = 10000;
+
     OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+
+    public int getSchedulingTime() {
+        return schedulingTime;
+    }
+
+    public void setSchedulingTime(int time){
+        schedulingTime = time;
+    }
+
 
     public double getDesiredCPU() {
         return desiredCPU;
@@ -72,7 +83,7 @@ public class Monitor {
             }
         };
         service = Executors.newSingleThreadScheduledExecutor();
-        service.scheduleAtFixedRate(runnable, 0, 1000, TimeUnit.MILLISECONDS);
+        service.scheduleAtFixedRate(runnable, 0, schedulingTime, TimeUnit.MILLISECONDS);
     }
 
     public void stop(){

@@ -100,7 +100,11 @@ public class WorkloadController {
         return "Target Cpu usage : " + monitor.getDesiredCPU() + "%";
     }
 
-
+    @GetMapping("/setTime")
+    @ResponseBody
+    public String setSchedulingTime(@RequestParam int time) {
+        return "Scheduling Time : " + monitor.getSchedulingTime() + " ms";
+    }
 
     // @GetMapping("/work")
     // @ResponseBody
