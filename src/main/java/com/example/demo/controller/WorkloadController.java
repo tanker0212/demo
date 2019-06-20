@@ -2,7 +2,6 @@ package com.example.demo.controller;
 
 import java.io.IOException;
 
-import com.example.demo.service.MetricPrediction;
 import com.example.demo.service.Monitor;
 import com.example.demo.service.Workload;
 

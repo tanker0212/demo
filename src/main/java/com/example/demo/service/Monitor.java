@@ -30,6 +30,7 @@ public class Monitor {
 
     ScheduledExecutorService service;
 
+    OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
     public double getDesiredCPU() {
         return desiredCPU;
@@ -44,9 +45,7 @@ public class Monitor {
     }
 
     public double showCPU(){
-        OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-        double load = osBean.getSystemCpuLoad();
-        return load*100.0;
+        return osBean.getSystemCpuLoad()*100.0;
     }
 
     public void start(boolean isPredict){
@@ -58,6 +57,14 @@ public class Monitor {
             public void run() {
                 currentCPU = showCPU();
                 cpuUasge.add(currentCPU);
+                if (cpuUasge.size() > 40){
+                    cpuUasge = cpuUasge.subList(cpuUasge.size()-20, cpuUasge.size());
+                }
+
+                System.out.println("list : ");
+                System.out.println(cpuUasge);
+                System.out.println("\n");
+
                 predictCPU = predict();
                 scaling(isPredict);
                 // System.out.println(currentCPU);
@@ -106,10 +113,6 @@ public class Monitor {
     private Double getExpect(List<Double> list, int year, Double modulus ) {
         if (list.size() < 10 || modulus <= 0 || modulus >= 1) {
             return (double) 0;
-        }
-
-        if (list.size() > 20){
-            list = list.subList(list.size()-20, list.size());
         }
 
         // System.out.println("list : ");

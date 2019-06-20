@@ -16,9 +16,6 @@
 
 	<properties>
 		<java.version>1.8</java.version>
-		<project.http.version>1.23.0</project.http.version>
-		<project.oauth.version>1.23.0</project.oauth.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<dependencies>
@@ -37,28 +34,6 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.4</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.apis</groupId>
-			<artifactId>google-api-services-container</artifactId>
-			<version>v1-rev78-1.25.0</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>com.google.apis</groupId>
-			<artifactId>google-api-services-plus</artifactId>
-			<version>v1-rev530-1.23.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.http-client</groupId>
-			<artifactId>google-http-client-jackson2</artifactId>
-			<version>${project.http.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.oauth-client</groupId>
-			<artifactId>google-oauth-client-jetty</artifactId>
-			<version>${project.oauth.version}</version>
 		</dependency>
 
 	</dependencies>
