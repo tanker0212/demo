@@ -2,6 +2,8 @@ package com.example.demo.controller;
 
 import java.io.IOException;
 
+import com.example.demo.service.MetricPrediction;
+import com.example.demo.service.Monitor;
 import com.example.demo.service.Workload;
 
 import org.apache.http.client.ClientProtocolException;
@@ -19,6 +21,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class WorkloadController {
     @Autowired
     Workload workload;
+
+    @Autowired
+    Monitor monitor;
+
+    // @Autowired
+    // MetricPrediction metricPrediction;
     
     @GetMapping("/test")
     @ResponseBody
@@ -28,10 +36,76 @@ public class WorkloadController {
         return retval;
     }
 
-
-    @GetMapping("/work")
+    @GetMapping("/print")
     @ResponseBody
-    public void loadTheWork(@RequestParam String ip, @RequestParam int repeat, @RequestParam int load) throws ClientProtocolException, IOException {
-        workload.startWorkload(ip, repeat, load);
+    public void print() {
+        //System.out.println(loop);
+        monitor.testPrint();
+
     }
+
+    @GetMapping("/")
+    @ResponseBody
+    public String work() {
+
+        workload.setLoad(100);
+
+        return workload.getReplicas() + "\t" + monitor.getCPU();
+    }
+
+    @GetMapping("/init")
+    @ResponseBody
+    public int init() {
+        workload.setReplicas(1);
+        return workload.getReplicas();
+    }
+
+    @GetMapping("/stop")
+    @ResponseBody
+    public String stopMonitoring() {
+        monitor.stop();
+        return "Monitoring Stop!";
+    }
+
+    @GetMapping("/startD")
+    @ResponseBody
+    public String startD() {
+        monitor.start(false);
+        return "default scheme Start";
+    }
+
+    @GetMapping("/startP")
+    @ResponseBody
+    public String startP() {
+        monitor.start(true);
+        return "predition scheme Start";
+    }
+
+    @GetMapping("/setDesiredCPU")
+    @ResponseBody
+    public String setDesiredCPU(@RequestParam double set) {
+        monitor.setDesiredCPU(set);
+        return "Target Cpu usage : " + set + "%";
+    }
+
+    @GetMapping("/getDesiredCPU")
+    @ResponseBody
+    public String getDesiredCPU() {
+        return "Target Cpu usage : " + monitor.getDesiredCPU() + "%";
+    }
+
+
+
+    // @GetMapping("/work")
+    // @ResponseBody
+    // public void loadTheWork(@RequestParam String ip, @RequestParam int repeat, @RequestParam int load) throws ClientProtocolException, IOException {
+    //     workload.startWorkload(ip, repeat, load);
+    // }
+
+    // @GetMapping("/save")
+    // @ResponseBody
+    // public String loadTheWork() {
+    //     workload.saveLog();
+    //     return "OK";
+    // }
 }
