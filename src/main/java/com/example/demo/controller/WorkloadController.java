@@ -1,11 +1,7 @@
 package com.example.demo.controller;
 
-import java.io.IOException;
-
-import com.example.demo.service.Monitor;
 import com.example.demo.service.Workload;
 
-import org.apache.http.client.ClientProtocolException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,44 +11,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 /**
  * workload
  */
-
 @Controller
 public class WorkloadController {
     @Autowired
     Workload workload;
 
-    @Autowired
-    Monitor monitor;
-
-    // @Autowired
-    // MetricPrediction metricPrediction;
-    
-    @GetMapping("/test")
-    @ResponseBody
-    public int getRequest(@RequestParam(required = false) Integer loop) {
-        //System.out.println(loop);
-        int retval = workload.setLoad(loop);
-        return retval;
-    }
-
-    @GetMapping("/print")
-    @ResponseBody
-    public void print() {
-        //System.out.println(loop);
-        monitor.testPrint();
-
-    }
-
-    @GetMapping("/monitor")
-    @ResponseBody
-    public String monitor() {
-        return workload.getReplicas() + "\t" + monitor.getCPU();
-    }
-
     @GetMapping("/work")
     @ResponseBody
     public void work() {
-        workload.setLoad(100);
+        workload.startLoad();
     }
 
     @GetMapping("/setLoop")
@@ -62,66 +29,4 @@ public class WorkloadController {
         return "set loop : " + workload.getLoop();
     }
 
-
-
-    @GetMapping("/init")
-    @ResponseBody
-    public int init() {
-        workload.setReplicas(1);
-        return workload.getReplicas();
-    }
-
-    @GetMapping("/stop")
-    @ResponseBody
-    public String stopMonitoring() {
-        monitor.stop();
-        return "Monitoring Stop!";
-    }
-
-    @GetMapping("/startD")
-    @ResponseBody
-    public String startD() {
-        monitor.start(false);
-        return "default scheme Start";
-    }
-
-    @GetMapping("/startP")
-    @ResponseBody
-    public String startP() {
-        monitor.start(true);
-        return "predition scheme Start";
-    }
-
-    @GetMapping("/setDesiredCPU")
-    @ResponseBody
-    public String setDesiredCPU(@RequestParam double set) {
-        monitor.setDesiredCPU(set);
-        return "Target Cpu usage : " + set + "%";
-    }
-
-    @GetMapping("/getDesiredCPU")
-    @ResponseBody
-    public String getDesiredCPU() {
-        return "Target Cpu usage : " + monitor.getDesiredCPU() + "%";
-    }
-
-    @GetMapping("/setTime")
-    @ResponseBody
-    public String setSchedulingTime(@RequestParam int time) {
-        monitor.setSchedulingTime(time);
-        return "Scheduling Time : " + monitor.getSchedulingTime() + " ms";
-    }
-
-    // @GetMapping("/work")
-    // @ResponseBody
-    // public void loadTheWork(@RequestParam String ip, @RequestParam int repeat, @RequestParam int load) throws ClientProtocolException, IOException {
-    //     workload.startWorkload(ip, repeat, load);
-    // }
-
-    // @GetMapping("/save")
-    // @ResponseBody
-    // public String loadTheWork() {
-    //     workload.saveLog();
-    //     return "OK";
-    // }
 }

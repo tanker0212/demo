@@ -1,14 +1,13 @@
 package com.example.demo.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import java.lang.management.ManagementFactory;
 import com.sun.management.OperatingSystemMXBean;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,19 +17,21 @@ import org.springframework.stereotype.Service;
 @Service
 public class Monitor {
     @Autowired
-    Workload workload;
+    Scaling scaling;
 
-    boolean isMonitoring = false;
+    @Autowired
+    Prediction prediction;
 
     List<Double> cpuUasge = new ArrayList<Double>();
 
+    boolean isMonitoring = false;
+
     double currentCPU = 0;
     double predictCPU = 0;
-    double desiredCPU = 50.0;
-
-    ScheduledExecutorService service;
 
     int schedulingTime = 5000;
+
+    ScheduledExecutorService service;
 
     OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 
@@ -42,21 +43,12 @@ public class Monitor {
         schedulingTime = time;
     }
 
-
-    public double getDesiredCPU() {
-        return desiredCPU;
-    }
-
-    public void setDesiredCPU(double target){
-        desiredCPU = target;
-    }
-
     public double getCPU(){
         return currentCPU;
     }
 
     public double showCPU(){
-        return osBean.getSystemCpuLoad()*100.0;
+        return osBean.getSystemCpuLoad() * 100.0;
     }
 
     public void start(boolean isPredict){
@@ -68,18 +60,17 @@ public class Monitor {
             public void run() {
                 currentCPU = showCPU();
                 cpuUasge.add(currentCPU);
+                
                 if (cpuUasge.size() > 40){
-                    cpuUasge = cpuUasge.subList(cpuUasge.size()-20, cpuUasge.size());
+                    cpuUasge = cpuUasge.subList(cpuUasge.size()-40, cpuUasge.size());
                 }
 
                 System.out.println("list : ");
                 System.out.println(cpuUasge);
                 System.out.println("\n");
 
-                predictCPU = predict();
-                scaling(isPredict);
-                // System.out.println(currentCPU);
-                // System.out.println(out); 
+                predictCPU = getPredict();
+                scaling.scaling(isPredict, currentCPU, predictCPU);
             }
         };
         service = Executors.newSingleThreadScheduledExecutor();
@@ -88,57 +79,13 @@ public class Monitor {
 
     public void stop(){
         service.shutdown();
+        currentCPU = 0;
+        predictCPU = 0;
+        cpuUasge.clear();
+        isMonitoring = false;
     }
 
-    public void testPrint(){
-        System.out.println(workload.getReplicas() + "\t" + currentCPU + "\t" + predictCPU);
-    }
-
-    public int scaling(boolean isPredict){
-        int replicas = workload.getReplicas();
-
-        int desiredReplicas = 1;
-        if (isPredict){
-            //예측모델
-            desiredReplicas = (int) Math.ceil(replicas * (predictCPU / desiredCPU));
-            if (replicas > desiredReplicas){
-                desiredReplicas = (int) Math.ceil(replicas * (currentCPU / desiredCPU));
-            }
-
-        } else {
-            //기존 모델
-            desiredReplicas = (int) Math.ceil(replicas * (currentCPU / desiredCPU));
-        }
-        
-        if (desiredReplicas == 0) desiredReplicas = 1;
-        workload.setReplicas(desiredReplicas);
-        System.out.println("\t\t" + desiredReplicas);
-        return desiredReplicas;
-    }
-
-
-    public double predict(){
-        return getExpect(cpuUasge, 1, 0.6);
-    }
-
-    private Double getExpect(List<Double> list, int year, Double modulus ) {
-        if (list.size() < 10 || modulus <= 0 || modulus >= 1) {
-            return (double) 0;
-        }
-
-        // System.out.println("list : ");
-        // System.out.println(list);
-        // System.out.println("\n");
-
-        Double modulusLeft = 1 - modulus;
-        Double lastIndex = list.get(0);
-        Double lastSecIndex = list.get(0);
-        for (Double data :list) {
-            lastIndex = modulus * data + modulusLeft * lastIndex;
-            lastSecIndex = modulus * lastIndex + modulusLeft * lastSecIndex;
-        }
-        Double a = 2 * lastIndex - lastSecIndex;
-        Double b = (modulus / modulusLeft) * (lastIndex - lastSecIndex);
-        return a + b * year;
+    public double getPredict(){
+        return prediction.prediction(cpuUasge, 1, 0.6);
     }
 }
